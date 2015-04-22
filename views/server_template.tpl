@@ -8,6 +8,7 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
         <!-- Latest compiled and minified JavaScript -->
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+        <script src="serverMainScript.js"></script>
     </head>
     <body>
         <nav class="navbar navbar-inverse">
@@ -21,12 +22,10 @@
         </nav>
 
         <div class="container">
-            <div class="row">
-                % for cluster in clients:
-                    <div class="col-md-4 col-sm-4 col-ld-4">
-                        <img src="cluster.png" class="img-responsive" />
-                    </div>
-                % end
+            <div class="row" id="clients">
+                <div class="col-md-4 col-sm-4 col-ld-4">
+                    <img src="cluster.png" class="img-responsive" />
+                </div>
             </div>
         </div>
     </body>
