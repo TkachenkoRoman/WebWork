@@ -32,7 +32,7 @@ function appendClient(cl) {
     }).appendTo("#" + clientId);
 
     $('<p/>', {
-        text: "http_user_agent: "cl.httpUserAgent,
+        text: "http_user_agent:  " + cl.httpUserAgent,
     }).appendTo("#" + clientId);
 
 
