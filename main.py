@@ -6,6 +6,7 @@ import json
 import jsonpickle
 from client import Client
 from jsonSerializableClient import JSONClient
+from serverMessage import ServerMessage
 
 app = Bottle()
 allClients = []
@@ -22,6 +23,9 @@ def sendClientsInfoToServerPage(allClients, serverSocket):
     if serverSocket:
         serverSocket.send(jsonpickle.encode(getJSONClients(allClients))) #send client info to server page
 
+def sendMsgToClient(msg, socket):
+    if socket:
+        socket.send(jsonpickle.encode(msg)) #send client info to server page
 
 @app.route('/websocketClient')
 def handle_websocket_client():
@@ -40,6 +44,8 @@ def handle_websocket_client():
     print ("client socket received")
 
     allClients.append(_client) #append cluster in array to handle them
+    serverMsg = ServerMessage(ServerMessage.CONECTION_MSG, _client.getId())
+    sendMsgToClient(serverMsg, _client.getSocket()) # send message that client is connected
 
     print("all clients: ", allClients.__len__())
     print("server socket: ", serverSocket)
