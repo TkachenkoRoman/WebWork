@@ -79,6 +79,7 @@ def handle_websocket_server():
     while True:
         try:
             message = serverSocket.receive()
+            print(message);
         except WebSocketError:
             print ("error in server socket")
             break
