@@ -1,24 +1,35 @@
+ws = new WebSocket("ws://webwork.ngrok.io/websocketServer");
 
-var app = angular.module('serverApp', []);
+ws.onopen = function() {
+    ws.send("Server greeting");
+};
 
-app.controller('serverController', function($scope, DataService) {
-    $scope.socket = DataService.soc;
+ws.onmessage = function (evt)
+{
+    var clients = JSON.parse(evt.data);
+    console.log("server page received ", clients);
 
-    $scope.$watch('clientsChange',
-     function (newVal, oldVal) { console.log("INSIDE LISTENER!! newVal = " + newVal + "; oldVal = " + oldVal);
-                                 $scope.socket = DataService.soc;
-                                 });
+    $('#clients').empty();
 
-    console.log("im inside serverController");
-    $scope.test = "hello";
+    clients.forEach(function(cl)
+    {
+        var clientId = "client" + cl.id;
 
-});
+        $('<div/>', {
+            class: "col-md-4 col-sm-4 col-ld-4",
+            id: clientId
+        }).appendTo('#clients');
 
-app.factory("DataService", function () {
-    var mySocket = new socket();
-    console.log("i`m inside factory");
-    return {
-        soc: mySocket
-    };
-});
+        $('<h4/>', {
+            text: clientId,
+            class: "text-center"
+        }).appendTo("#" + clientId);
 
+        $('<img/>', {
+            class: "img-responsive center-block",
+            src: "cluster.png"
+        }).appendTo("#" + clientId);
+
+        console.log("client with id " + cl.id + " was added to server page");
+    });
+};
