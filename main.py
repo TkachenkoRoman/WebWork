@@ -3,11 +3,20 @@ __author__ = 'roman'
 from bottle import request, Bottle, abort
 from bottle import route, run, template, static_file
 import json
+import jsonpickle
 from client import Client
+from jsonSerializableClient import JSONClient
 
 app = Bottle()
 allClients = []
 serverSocket = None
+
+def getJSONClients(clients):
+    result = []
+    for cl in clients:
+            jsonCl = JSONClient(cl.getId())
+            result.append(jsonCl)
+    return result
 
 @app.route('/websocketClient')
 def handle_websocket_client():
@@ -19,7 +28,7 @@ def handle_websocket_client():
     else:
         for cl in allClients:
             currId =  cl.getId()
-            if currentClientId < currId:
+            if currentClientId <= currId:
                 currentClientId = currId + 1
 
     _client = Client(currentClientId, wsock)
@@ -31,8 +40,8 @@ def handle_websocket_client():
     print("server socket: ", serverSocket)
 
     if serverSocket:
-        serverSocket.send(json.dump(allClients))
-        print("JSON: ", json.dump(allClients))
+        serverSocket.send(jsonpickle.encode(getJSONClients(allClients))) #send client info to server page
+        print("JSON data sended when new client was connected: ", jsonpickle.encode(getJSONClients(allClients))) #send client info to server page)
 
 
     if not wsock:
@@ -55,12 +64,13 @@ def handle_websocket_client():
 
 @app.route('/websocketServer')
 def handle_websocket_server():
+    global serverSocket #use global serverSocket because i want to send some data to server page from another function
     serverSocket = request.environ.get('wsgi.websocket')
 
     if serverSocket:
         print ("Server socket received")
-        serverSocket.send(json.dumps(allClients))
-        print("JSON: ", json.dumps(allClients))
+        serverSocket.send(jsonpickle.encode(getJSONClients(allClients))) #send client info to server page
+        print("JSON data sended when server page was opened: ", jsonpickle.encode(getJSONClients(allClients)))
 
 
     if not serverSocket:
@@ -70,6 +80,7 @@ def handle_websocket_server():
         try:
             message = serverSocket.receive()
         except WebSocketError:
+            print ("error in server socket")
             break
 
 @app.route('/')
@@ -79,7 +90,7 @@ def index():
 @app.route('/server')
 def server():
     print ("all clients: ", allClients)
-    return template('server_template', clients=allClients)
+    return template('server_template')
 
 
 # Static Routes
