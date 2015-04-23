@@ -12,7 +12,7 @@
     </head>
     <body>
         <nav class="navbar navbar-inverse">
-          <div class="container">
+          <div class="container-fluid">
             <div class="navbar-header">
               <a class="navbar-brand" href="#">
                 Server
@@ -21,11 +21,16 @@
           </div>
         </nav>
 
-        <div class="container">
-            <div class="row" id="clients">
-                <div class="col-md-4 col-sm-4 col-ld-4">
-                    <img src="cluster.png" class="img-responsive" />
+        <div class="container-fluid">
+            <div class="col-md-6 col-sm-6 col-ld-6">
+                <div class="row" id="clients">
+                    <div class="col-md-4 col-sm-4 col-ld-4">
+                        <img src="cluster.png" class="img-responsive" />
+                    </div>
                 </div>
+            </div>
+            <div class="col-md-6 col-sm-6 col-ld-6">
+                SERVER MENU
             </div>
         </div>
     </body>

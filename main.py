@@ -14,9 +14,14 @@ serverSocket = None
 def getJSONClients(clients):
     result = []
     for cl in clients:
-            jsonCl = JSONClient(cl.getId())
+            jsonCl = JSONClient(cl.getId(), cl.getHttpUserAgent())
             result.append(jsonCl)
     return result
+
+def sendClientsInfoToServerPage(allClients, serverSocket):
+    if serverSocket:
+        serverSocket.send(jsonpickle.encode(getJSONClients(allClients))) #send client info to server page
+
 
 @app.route('/websocketClient')
 def handle_websocket_client():
@@ -31,7 +36,7 @@ def handle_websocket_client():
             if currentClientId <= currId:
                 currentClientId = currId + 1
 
-    _client = Client(currentClientId, wsock)
+    _client = Client(currentClientId, wsock, request.environ.get('HTTP_USER_AGENT'))
     print ("client socket received")
 
     allClients.append(_client) #append cluster in array to handle them
@@ -39,9 +44,8 @@ def handle_websocket_client():
     print("all clients: ", allClients.__len__())
     print("server socket: ", serverSocket)
 
-    if serverSocket:
-        serverSocket.send(jsonpickle.encode(getJSONClients(allClients))) #send client info to server page
-        print("JSON data sended when new client was connected: ", jsonpickle.encode(getJSONClients(allClients))) #send client info to server page)
+    sendClientsInfoToServerPage(allClients, serverSocket)
+    print("JSON data sended when new client was connected: ", jsonpickle.encode(getJSONClients(allClients))) #send client info to server page)
 
 
     if not wsock:
@@ -58,8 +62,13 @@ def handle_websocket_client():
                 except WebSocketError:
                     print ("somebody leave..")
                     allClients.remove(cl)
+                    sendClientsInfoToServerPage(allClients, serverSocket)
 
         except WebSocketError:
+            for cl in allClients:
+                if cl.getSocket() == wsock:
+                    allClients.remove(cl)
+                    sendClientsInfoToServerPage(allClients, serverSocket)
             break
 
 @app.route('/websocketServer')
@@ -69,9 +78,7 @@ def handle_websocket_server():
 
     if serverSocket:
         print ("Server socket received")
-        serverSocket.send(jsonpickle.encode(getJSONClients(allClients))) #send client info to server page
-        print("JSON data sended when server page was opened: ", jsonpickle.encode(getJSONClients(allClients)))
-
+        sendClientsInfoToServerPage(allClients, serverSocket)
 
     if not serverSocket:
         abort(400, 'Expected WebSocket request.')
@@ -81,7 +88,7 @@ def handle_websocket_server():
             message = serverSocket.receive()
             print(message);
         except WebSocketError:
-            print ("error in server socket")
+            print ("except WebSocketError")
             break
 
 @app.route('/')

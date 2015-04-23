@@ -13,23 +13,31 @@ ws.onmessage = function (evt)
 
     clients.forEach(function(cl)
     {
-        var clientId = "client" + cl.id;
-
-        $('<div/>', {
-            class: "col-md-4 col-sm-4 col-ld-4",
-            id: clientId
-        }).appendTo('#clients');
-
-        $('<h4/>', {
-            text: clientId,
-            class: "text-center"
-        }).appendTo("#" + clientId);
-
-        $('<img/>', {
-            class: "img-responsive center-block",
-            src: "cluster.png"
-        }).appendTo("#" + clientId);
-
+        appendClient(cl);
         console.log("client with id " + cl.id + " was added to server page");
     });
+};
+
+function appendClient(cl) {
+    var clientId = "client" + cl.id;
+    var clientInfoId = "clientInfo" + cl.id;
+
+    $('<div/>', {
+        class: "well well-sm",
+        id: clientId
+    }).appendTo('#clients');
+
+    $('<h4/>', {
+        text: "Client id: " + cl.id,
+    }).appendTo("#" + clientId);
+
+    $('<p/>', {
+        text: "http_user_agent: "cl.httpUserAgent,
+    }).appendTo("#" + clientId);
+
+
+    /*$('<img/>', {
+        class: "img-responsive",
+        src: "cluster.png"
+    }).appendTo("#" + clientId);*/
 };
