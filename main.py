@@ -7,6 +7,7 @@ import jsonpickle
 from client import Client
 from jsonSerializableClient import JSONClient
 from serverMessage import ServerMessage
+from taskmanager import *
 
 app = Bottle()
 allClients = []
@@ -85,6 +86,12 @@ def handle_websocket_server():
     if serverSocket:
         print ("Server socket received")
         sendClientsInfoToServerPage(allClients, serverSocket)
+
+    taskManager = TaskManager()
+    print("Task manager generated tasks: ")
+    for task in taskManager.getTasks(allClients.__len__()):
+        print("task -- ", task.task[task.task.__len__()-200:task.task.__len__()])
+    print("clients amount: ", allClients.__len__())
 
     if not serverSocket:
         abort(400, 'Expected WebSocket request.')

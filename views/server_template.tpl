@@ -23,14 +23,18 @@
 
         <div class="container-fluid">
             <div class="col-md-6 col-sm-6 col-ld-6">
+                <h2>Connected clients:</h2>
                 <div class="row" id="clients">
-                    <div class="col-md-4 col-sm-4 col-ld-4">
-                        <img src="cluster.png" class="img-responsive" />
-                    </div>
                 </div>
             </div>
             <div class="col-md-6 col-sm-6 col-ld-6">
-                SERVER MENU
+                <h2>Server task:</h2>
+                <div class="input-group">
+                  <input type="text" class="form-control" placeholder="Search for...">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="button">Go!</button>
+                  </span>
+                </div><!-- /input-group -->
             </div>
         </div>
     </body>
