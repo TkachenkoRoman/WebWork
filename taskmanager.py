@@ -24,6 +24,9 @@ class TaskManager:
             print("DATA.TXT: ", self.data[0:500])
 
     def getTasks(self, clientsAmount):
+        if clientsAmount == 0:
+            return None
+
         dataLen = self.data.__len__()
         resultTaskList = []
         if dataLen > 0:

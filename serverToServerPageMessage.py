@@ -1,9 +1,9 @@
 __author__ = 'roman'
 
 class ServerToServerPageMessage:
-    NEW_CLIENT_MSG = 0
-    CLIENT_LEAVED_MSG = 1
-    WARNING_MSG = 3
+    NEW_CLIENT_MSG = 10
+    CLIENT_LEAVED_MSG = 11
+    WARNING_MSG = 12
 
     def __init__(self, type):
         self.type = type

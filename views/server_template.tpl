@@ -21,7 +21,7 @@
           </div>
         </nav>
 
-        <div class="container-fluid">
+        <div class="container-fluid" id="main">
             <div class="col-md-6 col-sm-6 col-ld-6">
                 <h2>Connected clients:</h2>
                 <div class="row" id="clients">

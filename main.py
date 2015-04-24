@@ -9,22 +9,27 @@ from jsonSerializableClient import JSONClient
 from serverToClientMessage import ServerToClientMessage
 from taskmanager import *
 from serverPageToServerMessage import *
+from serverToServerPageMessage import *
 
 app = Bottle()
 allClients = []
 serverSocket = None
 taskList = []
 
-def getJSONClients(clients):
-    result = []
-    for cl in clients:
-            jsonCl = JSONClient(cl.getId(), cl.getHttpUserAgent())
-            result.append(jsonCl)
-    return result
+def sendAddClientMessageToServerPage(client):
+    newClientMessage = ServerToServerPageMessage(ServerToServerPageMessage.NEW_CLIENT_MSG) # add client to server page
+    newClientMessage.addClient(client)
+    serverSocket.send(jsonpickle.encode(newClientMessage))
 
-def sendClientsInfoToServerPage(allClients, serverSocket):
-    if serverSocket:
-        serverSocket.send(jsonpickle.encode(getJSONClients(allClients))) #send client info to server page
+def sendLeaveClientMessageToServerPage(client):
+    deletedClientMessage = ServerToServerPageMessage(ServerToServerPageMessage.CLIENT_LEAVED_MSG) # add client to server page
+    deletedClientMessage.deletedClient(client)
+    serverSocket.send(jsonpickle.encode(deletedClientMessage))
+
+def sendWarningMessageToServerPage(message):
+    warningMessage = ServerToServerPageMessage(ServerToServerPageMessage.WARNING_MSG) # add client to server page
+    warningMessage.warning(message)
+    serverSocket.send(jsonpickle.encode(warningMessage))
 
 def sendMsgToClient(msg, socket):
     if socket:
@@ -73,9 +78,8 @@ def handle_websocket_client():
     print("all clients: ", allClients.__len__())
     print("server socket: ", serverSocket)
 
-    sendClientsInfoToServerPage(allClients, serverSocket)
-    print("JSON data sended when new client was connected: ", jsonpickle.encode(getJSONClients(allClients))) #send client info to server page)
 
+    sendAddClientMessageToServerPage(_client)
 
     if not wsock:
         abort(400, 'Expected WebSocket request.')
@@ -91,13 +95,13 @@ def handle_websocket_client():
                 except WebSocketError:
                     print ("somebody leave..")
                     allClients.remove(cl)
-                    sendClientsInfoToServerPage(allClients, serverSocket)
+                    sendLeaveClientMessageToServerPage(cl)
 
         except WebSocketError:
             for cl in allClients:
                 if cl.getSocket() == wsock:
                     allClients.remove(cl)
-                    sendClientsInfoToServerPage(allClients, serverSocket)
+                    sendLeaveClientMessageToServerPage(cl)
             break
 
 @app.route('/websocketServer')
@@ -108,7 +112,8 @@ def handle_websocket_server():
 
     if serverSocket:
         print ("Server socket received")
-        sendClientsInfoToServerPage(allClients, serverSocket)
+        for cl in allClients:
+            sendAddClientMessageToServerPage(cl)
 
     if not serverSocket:
         abort(400, 'Expected WebSocket request.')
@@ -131,6 +136,8 @@ def handle_websocket_server():
                     print("substring to search: ", task.substringToSearch)
 
                     giveOutTasks(allClients, taskList)
+                else:
+                    sendWarningMessageToServerPage("No clients connected")
 
         except WebSocketError:
             print ("except WebSocketError")

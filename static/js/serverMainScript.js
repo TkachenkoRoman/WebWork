@@ -7,20 +7,37 @@ ws.onopen = function() {
 
 ws.onmessage = function (evt)
 {
-    var clients = JSON.parse(evt.data);
-    console.log("server page received ", clients);
-
-    $('#clients').empty();
-
-    clients.forEach(function(cl)
-    {
-        appendClient(cl);
-        console.log("client with id " + cl.id + " was added to server page");
-    });
+    var serverMsg = JSON.parse(evt.data);
+    processMsg(serverMsg);
 };
 
 var START_SHARING_TASKS_MSG = 1;
 var GREATING_MSG = 0;
+
+var NEW_CLIENT_MSG = 10
+var CLIENT_LEAVED_MSG = 11
+var WARNING_MSG = 12
+
+function processMsg(serverMsg) {
+    $("#warning").remove();
+    if (serverMsg.type == NEW_CLIENT_MSG)
+    {
+        appendClient(serverMsg);
+    }
+    if (serverMsg.type == CLIENT_LEAVED_MSG)
+    {
+        removeClient(serverMsg);
+    }
+    if (serverMsg.type == WARNING_MSG)
+    {
+        $('<h2/>', {
+            text: serverMsg.message,
+            id: "warning",
+            class: "text-center"
+        }).prependTo('#main');
+    }
+};
+
 function message(type, data) {
     this.type = type;
     this.data = data;
@@ -55,4 +72,10 @@ function appendClient(cl) {
         class: "img-responsive",
         src: "cluster.png"
     }).appendTo("#" + clientId);*/
+};
+
+function removeClient(cl) {
+    var clientId = "client" + cl.id;
+
+    $("#" + clientId).remove();
 };
