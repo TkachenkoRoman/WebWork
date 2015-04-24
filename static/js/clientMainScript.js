@@ -1,4 +1,5 @@
 var CONECTION_MSG = 0 /* message says that client is connected */
+var TASK_MSG = 1 /* new task (start calculating it) */
 
 var ws = new WebSocket("ws://webwork.ngrok.io/websocketClient");
 var output = $("#output");
@@ -18,5 +19,20 @@ function processMsg(serverMsg) {
             class: "text-center"
         }).appendTo("#main");
     }
-
+    if (serverMsg.type == TASK_MSG)
+    {
+        $("#taskInfo").empty();
+        $('<h2/>', {
+            text: "You have a new task! ",
+            class: "text-center"
+        }).appendTo("#taskInfo");
+        $('<p/>', {
+            text: "substring to search: " + serverMsg.substringToSearch,
+            class: "text-center"
+        }).appendTo("#taskInfo");
+        $('<p/>', {
+            text: "start position in text: " + serverMsg.startPos,
+            class: "text-center"
+        }).appendTo("#taskInfo");
+    }
 }

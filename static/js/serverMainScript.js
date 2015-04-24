@@ -1,7 +1,8 @@
 ws = new WebSocket("ws://webwork.ngrok.io/websocketServer");
 
 ws.onopen = function() {
-    ws.send("Server greeting");
+    msg = new message(GREATING_MSG, "WS opened");
+    ws.send(JSON.stringify(msg));
 };
 
 ws.onmessage = function (evt)
@@ -17,6 +18,20 @@ ws.onmessage = function (evt)
         console.log("client with id " + cl.id + " was added to server page");
     });
 };
+
+var START_SHARING_TASKS_MSG = 1;
+var GREATING_MSG = 0;
+function message(type, data) {
+    this.type = type;
+    this.data = data;
+};
+
+$(document).ready(function(){
+    $("#goButton").click(function() {
+        msg = new message(START_SHARING_TASKS_MSG, $("#substringToSearch").val());
+        ws.send(JSON.stringify(msg));
+    });
+});
 
 function appendClient(cl) {
     var clientId = "client" + cl.id;

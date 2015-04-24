@@ -1,6 +1,8 @@
 __author__ = 'roman'
 
 class Client:
+    busy = False
+
     def __init__(self, id, ws, httpUserAgent):
         self.id = id
         self.websocket = ws

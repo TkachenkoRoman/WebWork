@@ -30,9 +30,9 @@
             <div class="col-md-6 col-sm-6 col-ld-6">
                 <h2>Server task:</h2>
                 <div class="input-group">
-                  <input type="text" class="form-control" placeholder="Search for...">
+                  <input type="text" class="form-control" placeholder="Search for..." id="substringToSearch">
                   <span class="input-group-btn">
-                    <button class="btn btn-default" type="button">Go!</button>
+                    <button class="btn btn-default" type="button" id="goButton">Go!</button>
                   </span>
                 </div><!-- /input-group -->
             </div>

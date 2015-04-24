@@ -6,12 +6,14 @@ import json
 import jsonpickle
 from client import Client
 from jsonSerializableClient import JSONClient
-from serverMessage import ServerMessage
+from serverToClientMessage import ServerToClientMessage
 from taskmanager import *
+from serverPageToServerMessage import *
 
 app = Bottle()
 allClients = []
 serverSocket = None
+taskList = []
 
 def getJSONClients(clients):
     result = []
@@ -27,6 +29,26 @@ def sendClientsInfoToServerPage(allClients, serverSocket):
 def sendMsgToClient(msg, socket):
     if socket:
         socket.send(jsonpickle.encode(msg)) #send client info to server page
+
+def getServerPageToServerMessage(msg):
+    return jsonpickle.decode(msg)
+
+def giveOutTasks(allClients, taskList):
+    clIndex = 0
+    for task in taskList: # set performers to every task
+        task.setClientPerformer(allClients[clIndex])
+        clIndex = clIndex + 1
+        if clIndex >= allClients.__len__():
+            clIndex = 0
+    for task in taskList: # give out Tasks
+        client = task.getClientPerformer()
+        print("performer for task is client with id ", client.getId())
+        if client.busy == False:
+            msg = ServerToClientMessage(ServerToClientMessage.TASK_MSG, client.getId())
+            msg.setTask(task)
+            print("message for perfrmer: ", msg)
+            client.getSocket().send(jsonpickle.encode(msg))
+            client.busy = True
 
 @app.route('/websocketClient')
 def handle_websocket_client():
@@ -45,7 +67,7 @@ def handle_websocket_client():
     print ("client socket received")
 
     allClients.append(_client) #append cluster in array to handle them
-    serverMsg = ServerMessage(ServerMessage.CONECTION_MSG, _client.getId())
+    serverMsg = ServerToClientMessage(ServerToClientMessage.CONECTION_MSG, _client.getId())
     sendMsgToClient(serverMsg, _client.getSocket()) # send message that client is connected
 
     print("all clients: ", allClients.__len__())
@@ -81,17 +103,12 @@ def handle_websocket_client():
 @app.route('/websocketServer')
 def handle_websocket_server():
     global serverSocket #use global serverSocket because i want to send some data to server page from another function
+    global taskList
     serverSocket = request.environ.get('wsgi.websocket')
 
     if serverSocket:
         print ("Server socket received")
         sendClientsInfoToServerPage(allClients, serverSocket)
-
-    taskManager = TaskManager()
-    print("Task manager generated tasks: ")
-    for task in taskManager.getTasks(allClients.__len__()):
-        print("task -- ", task.task[task.task.__len__()-200:task.task.__len__()])
-    print("clients amount: ", allClients.__len__())
 
     if not serverSocket:
         abort(400, 'Expected WebSocket request.')
@@ -100,6 +117,21 @@ def handle_websocket_server():
         try:
             message = serverSocket.receive()
             print(message);
+            messageDecoded = getServerPageToServerMessage(message)
+            serverPageToServerMsg = ServerPageToServerMessage(messageDecoded)
+
+            if serverPageToServerMsg.type == ServerPageToServerMessage.START_SHARING_TASKS_MSG: # if server page wants to start sharing tasks
+                taskManager = TaskManager(serverPageToServerMsg.data) # create task manager, arg - substring to search
+                taskList = taskManager.getTasks(allClients.__len__()) # generate tasks
+                if taskList != None:
+                    print("Task manager generated tasks: ")
+                    for task in taskList:
+                        print("task -- ", task.string[task.string.__len__()-200:task.string.__len__()])
+                    print("clients amount: ", allClients.__len__())
+                    print("substring to search: ", task.substringToSearch)
+
+                    giveOutTasks(allClients, taskList)
+
         except WebSocketError:
             print ("except WebSocketError")
             break

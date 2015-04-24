@@ -24,5 +24,8 @@
         <div class="container-fluid" id="main">
 
         </div>
+        <div class="container-fluid" id="taskInfo">
+
+        </div>
     </body>
 </html>
