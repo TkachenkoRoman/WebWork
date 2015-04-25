@@ -15,6 +15,8 @@ class ServerToServerPageMessage:
         self.id = client.getId()
     def warning(self, msg):
         self.message = msg
-    def clientStatus(self, clientId, persents):
+    def clientStatus(self, clientId, status):
         self.clientId = clientId
-        self.persents = persents
+        self.status = status
+    def setSubstringPositions(self, substringPositions):
+        self.substringPositions = substringPositions

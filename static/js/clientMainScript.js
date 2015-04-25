@@ -5,7 +5,9 @@ var STATUS = 10;
 function message(type, status) {
     this.type = type;
     this.status = status;
+    this.substringPositions = [];
 };
+
 
 var ws = new WebSocket("ws://webwork.ngrok.io/websocketClient");
 var output = $("#output");
@@ -50,5 +52,24 @@ function processMsg(serverMsg) {
             text: "start position in text: " + serverMsg.startPos,
             class: "text-center"
         }).appendTo("#taskInfo");
+        $('<p/>', {
+            text: "status: 0",
+            id: "status",
+            class: "text-center"
+        }).appendTo("#taskInfo");
+
+
+        var webWorker = new Worker("stringSearchWorker.js");
+        webWorker.postMessage(JSON.stringify(serverMsg));
+
+        webWorker.onmessage = function(evt) {
+            var msg = JSON.parse(evt.data);
+            statusMsg = new message(STATUS, msg.status); /* 2nd argument will be percents proceed */
+            statusMsg.substringPositions = msg.substringPositions;
+            ws.send(JSON.stringify(statusMsg));
+            console.log("client send message to server: ", JSON.stringify(statusMsg));
+
+            $("#status").text("status: " + msg.status);
+        };
     }
 }

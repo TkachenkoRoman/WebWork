@@ -34,10 +34,11 @@ def sendWarningMessageToServerPage(message):
         warningMessage.warning(message)
         serverSocket.send(jsonpickle.encode(warningMessage))
 
-def sendClientStatusMessageToServerPage(clientId, status):
+def sendClientStatusMessageToServerPage(clientId, status, substringPositions):
     if (serverSocket):
         message = ServerToServerPageMessage(ServerToServerPageMessage.CLIENT_STATUS_MSG) # add client status to server page
         message.clientStatus(clientId, status)
+        message.setSubstringPositions(substringPositions)
         serverSocket.send(jsonpickle.encode(message))
 
 def sendMsgToClient(msg, socket):
@@ -45,21 +46,37 @@ def sendMsgToClient(msg, socket):
         socket.send(jsonpickle.encode(msg)) #send client info to server page
 
 def giveOutTasks(allClients, taskList):
-    clIndex = 0
     for task in taskList: # set performers to every task
-        task.setClientPerformer(allClients[clIndex])
-        clIndex = clIndex + 1
-        if clIndex >= allClients.__len__():
-            clIndex = 0
+        if task.getClientPerformer() == None:
+            for client in allClients:
+                if client.busy == False:
+                    task.setClientPerformer(client)
+                    client.busy = True
+                    break
     for task in taskList: # give out Tasks
         client = task.getClientPerformer()
-        print("performer for task is client with id ", client.getId())
-        if client.busy == False:
+        if client != None:
+            print("performer for task is client with id ", client.getId())
             msg = ServerToClientMessage(ServerToClientMessage.TASK_MSG, client.getId())
             msg.setTask(task)
             print("message for perfrmer: ", msg)
             client.getSocket().send(jsonpickle.encode(msg))
-            client.busy = True
+
+def removeTaskFromTaskList(performerId):
+    for task in taskList:
+        client = task.getClientPerformer()
+        if client != None:
+            if client.getId() == performerId:
+                client.busy = False
+                taskList.remove(task)
+                print ("Task done by client", performerId)
+                print ("Task removed from taskList")
+
+def removeTaskPerformer(cl): # is called when working client suddenly closes
+    for task in taskList:
+        client = task.getClientPerformer()
+        if client.getId() == cl.getId():
+            task.setClientPerformer(None)
 
 def generateClientId():
     currentClientId = 0
@@ -100,19 +117,34 @@ def handle_websocket_client():
                 for cl in allClients:
                     if cl.getSocket() == wsock:
                         allClients.remove(cl)
+                        if cl.busy == True:
+                            removeTaskPerformer(cl)
+                            print("Working client disconnected")
                         sendLeaveClientMessageToServerPage(cl)
+                        giveOutTasks(allClients, taskList)
+
                 break
             if (message.type == ClientToServerMessage.STATUS): # send client status message to server page
                 for cl in allClients:
                     if cl.getSocket() == wsock:
-                        sendClientStatusMessageToServerPage(cl.getId(), message.status)
-
+                        sendClientStatusMessageToServerPage(cl.getId(), message.status, message.substringPositions)
+                        if message.status == 100:
+                            if cl != None:
+                                removeTaskFromTaskList(cl.getId())
+                            if taskList.__len__() == 0:
+                                print("WORK DONE!!!") # send WORK_DONE_MSG
+                            else:
+                                giveOutTasks(allClients, taskList)
 
         except WebSocketError:
             for cl in allClients:
                 if cl.getSocket() == wsock:
                     allClients.remove(cl)
+                    if cl.busy == True:
+                        removeTaskPerformer(cl)
+                        print("Working client disconnected")
                     sendLeaveClientMessageToServerPage(cl)
+                    giveOutTasks(allClients, taskList)
             break
 
 @app.route('/websocketServer')

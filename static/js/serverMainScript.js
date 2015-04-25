@@ -40,9 +40,8 @@ function processMsg(serverMsg) {
     if (serverMsg.type == CLIENT_STATUS_MSG)
     {
         var clientId = "client" + serverMsg.clientId;
-        $('<p/>', {
-            text: "status:  " + "busy", /* here will be percents */
-        }).appendTo("#" + clientId);
+        console.log("client status msg", serverMsg);
+        $("#" + clientId + " > #status").text("status: " + serverMsg.status + ", positions of substring: " + serverMsg.substringPositions);
     }
 };
 
@@ -73,6 +72,11 @@ function appendClient(cl) {
 
     $('<p/>', {
         text: "http_user_agent:  " + cl.httpUserAgent,
+    }).appendTo("#" + clientId);
+
+    $('<p/>', {
+        text: "status: ready",
+        id: "status"
     }).appendTo("#" + clientId);
 
 

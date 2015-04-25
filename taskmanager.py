@@ -7,6 +7,7 @@ class Task:
         self.substringToSearch = substringToSearch # text to search
         self.string = string # part of text to search in
         self.status = status
+        self.client = None
     def setClientPerformer(self, client):
         self.client = client
     def getClientPerformer(self):
@@ -37,15 +38,17 @@ class TaskManager:
                 currentPosEnd = approximateTaskLen
                 for i in range(clientsAmount):
                     extraData = 0
-                    while self.data[currentPosEnd] != '\n':
-                        currentPosEnd = currentPosEnd -1
-                        extraData = extraData + 1
+                    if i != clientsAmount - 1:
+                        while self.data[currentPosEnd] != '\n':
+                            currentPosEnd = currentPosEnd -1
+                            extraData = extraData + 1
                     currTask = Task(self.substringToSearch, self.data[currentPosStart:currentPosEnd], Task.UNCOMPLETED_TASK)
                     currTask.setStartPos(currentPosStart)
                     resultTaskList.append(currTask)
                     currentPosStart = currentPosEnd + 1
                     if i == clientsAmount - 2:
-                        currentPosEnd = dataLen - 1
+                        currentPosEnd = dataLen
+                        print("currentPosEnd = ", currentPosEnd, self.data[currentPosEnd - 10:currentPosEnd])
                     else:
                         currentPosEnd = currentPosEnd + approximateTaskLen + extraData
                 return resultTaskList
