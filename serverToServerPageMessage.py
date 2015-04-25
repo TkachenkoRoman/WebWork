@@ -5,6 +5,7 @@ class ServerToServerPageMessage:
     CLIENT_LEAVED_MSG = 11
     WARNING_MSG = 12
     CLIENT_STATUS_MSG = 13
+    WORK_DONE_MSG = 14
 
     def __init__(self, type):
         self.type = type

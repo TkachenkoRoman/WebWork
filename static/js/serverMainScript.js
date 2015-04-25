@@ -18,6 +18,9 @@ var NEW_CLIENT_MSG = 10
 var CLIENT_LEAVED_MSG = 11
 var WARNING_MSG = 12
 var CLIENT_STATUS_MSG = 13
+var WORK_DONE_MSG = 14
+
+var totalResult = 0;
 
 function processMsg(serverMsg) {
     $("#warning").remove();
@@ -40,9 +43,45 @@ function processMsg(serverMsg) {
     if (serverMsg.type == CLIENT_STATUS_MSG)
     {
         var clientId = "client" + serverMsg.clientId;
-        console.log("client status msg", serverMsg);
-        $("#" + clientId + " > #status").text("status: " + serverMsg.status + ", positions of substring: " + serverMsg.substringPositions);
+
+        if (serverMsg.status == 100) /* some task completed */
+        {
+            console.log(clientId + " completed task");
+            $("#progressBar" + serverMsg.clientId).css('width', "0%").attr('aria-valuenow', 0);
+            $("#progressBar" + serverMsg.clientId).text("0%");
+            $("#resultsHeader").text("Results:");
+            $("#" + clientId + " > #searchResult").empty(); /* results will be displayed on right part of screen*/
+            $("#" + clientId + " > #status").text("status: ready");
+            var res = $('<li/>', {
+                class: "list-group-item",
+                text: "client " + serverMsg.clientId + " complete task"
+            }).appendTo('#results');
+            $('<span/>', {
+                            class: "badge",
+                            text: serverMsg.substringPositions.length
+                        }).appendTo(res);
+            totalResult = totalResult + serverMsg.substringPositions.length;
+        }
+        else
+        {
+            $("#" + clientId + " > #status").text("status: computing...");
+            $("#" + clientId + " > #searchResult").text("substrings found: " + serverMsg.substringPositions.length);
+            $("#progressBar" + serverMsg.clientId).css('width', serverMsg.status + "%").attr('aria-valuenow', serverMsg.status);
+            $("#progressBar" + serverMsg.clientId).text(serverMsg.status + "%");
+        }
     }
+    if (serverMsg.type == WORK_DONE_MSG)
+    {
+        var total = $('<li/>', {
+                class: "list-group-item",
+                text: "Total"
+            }).appendTo('#results');
+            $('<span/>', {
+                            class: "badge",
+                            text: totalResult
+                        }).appendTo(total);
+    }
+
 };
 
 function message(type, data) {
@@ -52,6 +91,8 @@ function message(type, data) {
 
 $(document).ready(function(){
     $("#goButton").click(function() {
+        $("#results").empty();
+        totalResult = 0;
         msg = new message(START_SHARING_TASKS_MSG, $("#substringToSearch").val());
         ws.send(JSON.stringify(msg));
     });
@@ -79,6 +120,24 @@ function appendClient(cl) {
         id: "status"
     }).appendTo("#" + clientId);
 
+    $('<p/>', {
+        id: "searchResult"
+    }).appendTo("#" + clientId);
+
+    var progressBar = $('<div/>', {
+        class: "progress"
+    }).appendTo("#" + clientId);
+
+    $('<div/>', {
+        id: "progressBar" + cl.id,
+        class: "progress-bar",
+        role: "progressbar",
+        'aria-valuenow': "0",
+        'aria-valuemin': "0",
+        'aria-valuemax': "100",
+        style: "min-width: 2em;",
+        text: "0%"
+    }).appendTo(progressBar);
 
     /*$('<img/>', {
         class: "img-responsive",

@@ -14,7 +14,7 @@ function workerMessage(status, substringPositions) {
 
 function searchSubstring(substringToSearch, string, startPos) {
     var substrPosList = []
-    var percent = Math.floor(string.length / 99);
+    var percent = Math.floor(string.length / 100);
     var status = 0;
 
     for (i = 0; i < string.length; ++i) {
@@ -27,7 +27,8 @@ function searchSubstring(substringToSearch, string, startPos) {
         {
             msg = new workerMessage(status, substrPosList);
             postMessage(JSON.stringify(msg));
-            status = status + 1;
+            if (status < 99)
+                status = status + 1;
         }
       }
     msg = new workerMessage(100, substrPosList);

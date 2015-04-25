@@ -78,8 +78,9 @@ def removeTaskFromTaskList(performerId):
 def removeTaskPerformer(cl): # is called when working client suddenly closes
     for task in taskList:
         client = task.getClientPerformer()
-        if client.getId() == cl.getId():
-            task.setClientPerformer(None)
+        if (client != None) and (cl != None):
+            if client.getId() == cl.getId():
+                task.setClientPerformer(None)
 
 def generateClientId():
     currentClientId = 0
@@ -136,6 +137,7 @@ def handle_websocket_client():
                                 removeTaskFromTaskList(cl.getId())
                             if taskList.__len__() == 0:
                                 print("WORK DONE!!!") # send WORK_DONE_MSG
+                                serverSocket.send(jsonpickle.encode(ServerToServerPageMessage(ServerToServerPageMessage.WORK_DONE_MSG)))
                             else:
                                 giveOutTasks(allClients, taskList)
 

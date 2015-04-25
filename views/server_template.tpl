@@ -35,6 +35,11 @@
                     <button class="btn btn-default" type="button" id="goButton">Go!</button>
                   </span>
                 </div><!-- /input-group -->
+                <h2 id="resultsHeader"></h2>
+                <div class="col-md-6 col-sm-6 col-ld-6">
+                    <ul class="list-group" id="results"></ul>
+                </div>
+
             </div>
         </div>
     </body>
