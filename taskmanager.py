@@ -32,6 +32,7 @@ class TaskManager:
         if dataLen > 0:
             if clientsAmount > 1:
                 approximateTaskLen = dataLen // clientsAmount
+                print("approximateTaskLen: ", approximateTaskLen)
                 currentPosStart = 0
                 currentPosEnd = approximateTaskLen
                 for i in range(clientsAmount):
@@ -43,8 +44,8 @@ class TaskManager:
                     currTask.setStartPos(currentPosStart)
                     resultTaskList.append(currTask)
                     currentPosStart = currentPosEnd + 1
-                    if i == clientsAmount:
-                        currentPosEnd = dataLen
+                    if i == clientsAmount - 2:
+                        currentPosEnd = dataLen - 1
                     else:
                         currentPosEnd = currentPosEnd + approximateTaskLen + extraData
                 return resultTaskList

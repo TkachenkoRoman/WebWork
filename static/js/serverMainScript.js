@@ -17,6 +17,7 @@ var GREATING_MSG = 0;
 var NEW_CLIENT_MSG = 10
 var CLIENT_LEAVED_MSG = 11
 var WARNING_MSG = 12
+var CLIENT_STATUS_MSG = 13
 
 function processMsg(serverMsg) {
     $("#warning").remove();
@@ -35,6 +36,13 @@ function processMsg(serverMsg) {
             id: "warning",
             class: "text-center"
         }).prependTo('#main');
+    }
+    if (serverMsg.type == CLIENT_STATUS_MSG)
+    {
+        var clientId = "client" + serverMsg.clientId;
+        $('<p/>', {
+            text: "status:  " + "busy", /* here will be percents */
+        }).appendTo("#" + clientId);
     }
 };
 
