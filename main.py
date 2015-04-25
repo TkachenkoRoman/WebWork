@@ -49,18 +49,20 @@ def giveOutTasks(allClients, taskList):
     for task in taskList: # set performers to every task
         if task.getClientPerformer() == None:
             for client in allClients:
-                if client.busy == False:
+                if client.isPerformer == False:
+                    client.isPerformer = True
                     task.setClientPerformer(client)
-                    client.busy = True
+                    print ("performer for task is ", client.getId())
                     break
     for task in taskList: # give out Tasks
         client = task.getClientPerformer()
-        if client != None:
-            print("performer for task is client with id ", client.getId())
+        if (client != None) and (client.busy == False):
+            #print("performer for task is client with id ", client.getId())
             msg = ServerToClientMessage(ServerToClientMessage.TASK_MSG, client.getId())
             msg.setTask(task)
             print("message for perfrmer: ", msg)
             client.getSocket().send(jsonpickle.encode(msg))
+            client.busy = True
 
 def removeTaskFromTaskList(performerId):
     for task in taskList:
@@ -68,6 +70,7 @@ def removeTaskFromTaskList(performerId):
         if client != None:
             if client.getId() == performerId:
                 client.busy = False
+                client.isPerformer = False
                 taskList.remove(task)
                 print ("Task done by client", performerId)
                 print ("Task removed from taskList")

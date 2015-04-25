@@ -14,7 +14,7 @@ function workerMessage(status, substringPositions) {
 
 function searchSubstring(substringToSearch, string, startPos) {
     var substrPosList = []
-    var percent = Math.floor(string.length / 100);
+    var percent = Math.floor(string.length / 99);
     var status = 0;
 
     for (i = 0; i < string.length; ++i) {
