@@ -3,6 +3,8 @@ ws = new WebSocket("ws://webwork.ngrok.io/websocketServer");
 ws.onopen = function() {
     msg = new message(GREATING_MSG, "WS opened");
     ws.send(JSON.stringify(msg));
+
+    $("#goButton").prop("disabled",false);
 };
 
 ws.onmessage = function (evt)
@@ -44,6 +46,9 @@ function processMsg(serverMsg) {
     {
         var clientId = "client" + serverMsg.clientId;
 
+        $("#goButton").button('reset');
+        $("#goButton").prop("disabled",true);
+
         if (serverMsg.status == 100) /* some task completed */
         {
             console.log(clientId + " completed task");
@@ -72,6 +77,7 @@ function processMsg(serverMsg) {
     }
     if (serverMsg.type == WORK_DONE_MSG)
     {
+        $("#goButton").prop("disabled",false);
         var total = $('<li/>', {
                 class: "list-group-item",
                 text: "Total"
@@ -95,6 +101,7 @@ $(document).ready(function(){
         totalResult = 0;
         msg = new message(START_SHARING_TASKS_MSG, $("#substringToSearch").val());
         ws.send(JSON.stringify(msg));
+        $("#goButton").button('loading');
     });
 });
 
@@ -102,10 +109,20 @@ function appendClient(cl) {
     var clientId = "client" + cl.id;
     var clientInfoId = "clientInfo" + cl.id;
 
-    $('<div/>', {
-        class: "well well-sm",
-        id: clientId
+    var well = $('<div/>', {
+        class: "well well-sm clearfix",
+        id: clientId,
+        style: "display: none;"
     }).appendTo('#clients');
+
+    $('<a/>', {
+        href: "#",
+        class: "pull-right",
+        html: $('<span/>', {
+            class: "glyphicon glyphicon-remove  ",
+            'aria-hidden': "true"
+        })
+    }).appendTo("#" + clientId);
 
     $('<h4/>', {
         text: "Client id: " + cl.id,
@@ -139,6 +156,8 @@ function appendClient(cl) {
         text: "0%"
     }).appendTo(progressBar);
 
+    well.fadeIn();
+
     /*$('<img/>', {
         class: "img-responsive",
         src: "cluster.png"
@@ -147,6 +166,5 @@ function appendClient(cl) {
 
 function removeClient(cl) {
     var clientId = "client" + cl.id;
-
-    $("#" + clientId).remove();
+    $("#" + clientId).fadeTo("fast", 0.00, function() { $(this).slideUp(function(){ $(this).remove() }) });
 };

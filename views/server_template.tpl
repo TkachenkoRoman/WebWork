@@ -32,7 +32,7 @@
                 <div class="input-group">
                   <input type="text" class="form-control" placeholder="Search for..." id="substringToSearch">
                   <span class="input-group-btn">
-                    <button class="btn btn-default" type="button" id="goButton">Go!</button>
+                    <button class="btn btn-default" type="button" id="goButton" data-loading-text="loading stuff...">Go</button>
                   </span>
                 </div><!-- /input-group -->
                 <h2 id="resultsHeader"></h2>
