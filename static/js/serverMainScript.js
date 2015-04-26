@@ -59,18 +59,18 @@ function processMsg(serverMsg) {
             $("#" + clientId + " > #status").text("status: ready");
             var res = $('<li/>', {
                 class: "list-group-item",
-                text: "client " + serverMsg.clientId + " complete task"
+                text: "client " + serverMsg.clientId + " complete task \t(" + serverMsg.time + "s)"
             }).appendTo('#results');
             $('<span/>', {
                             class: "badge",
-                            text: serverMsg.substringPositions.length
+                            text: serverMsg.substringFound
                         }).appendTo(res);
-            totalResult = totalResult + serverMsg.substringPositions.length;
+            totalResult = totalResult + serverMsg.substringFound;
         }
         else
         {
             $("#" + clientId + " > #status").text("status: computing...");
-            $("#" + clientId + " > #searchResult").text("substrings found: " + serverMsg.substringPositions.length);
+            $("#" + clientId + " > #searchResult").text("substrings found: " + serverMsg.substringFound);
             $("#progressBar" + serverMsg.clientId).css('width', serverMsg.status + "%").attr('aria-valuenow', serverMsg.status);
             $("#progressBar" + serverMsg.clientId).text(serverMsg.status + "%");
         }
@@ -110,19 +110,10 @@ function appendClient(cl) {
     var clientInfoId = "clientInfo" + cl.id;
 
     var well = $('<div/>', {
-        class: "well well-sm clearfix",
+        class: "well well-sm",
         id: clientId,
         style: "display: none;"
     }).appendTo('#clients');
-
-    $('<a/>', {
-        href: "#",
-        class: "pull-right",
-        html: $('<span/>', {
-            class: "glyphicon glyphicon-remove  ",
-            'aria-hidden': "true"
-        })
-    }).appendTo("#" + clientId);
 
     $('<h4/>', {
         text: "Client id: " + cl.id,

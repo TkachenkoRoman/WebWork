@@ -5,7 +5,8 @@ var STATUS = 10;
 function message(type, status) {
     this.type = type;
     this.status = status;
-    this.substringPositions = [];
+    this.substringFound = 0;
+    this.time = 0;
 };
 
 
@@ -32,32 +33,58 @@ function processMsg(serverMsg) {
     }
     if (serverMsg.type == TASK_MSG)
     {
+        var start = new Date().getTime();
+
         msg = new message(STATUS, "0"); /* 2nd argument will be percents proceed */
         ws.send(JSON.stringify(msg));
 
         $("#taskInfo").empty();
-        $('<h2/>', {
-            text: "You have a new task! ",
-            class: "text-center"
-        }).appendTo("#taskInfo");
-        $('<p/>', {
-            text: "substring to search: " + serverMsg.substringToSearch,
-            class: "text-center"
-        }).appendTo("#taskInfo");
-        $('<p/>', {
-            text: "string length: " + serverMsg.string.length,
-            class: "text-center"
-        }).appendTo("#taskInfo");
-        $('<p/>', {
-            text: "start position in text: " + serverMsg.startPos,
-            class: "text-center"
-        }).appendTo("#taskInfo");
-        $('<p/>', {
-            text: "status: 0",
-            id: "status",
-            class: "text-center"
+
+        var well = $('<div/>', {
+            class: "well well-sm",
+            style: "display: none;"
         }).appendTo("#taskInfo");
 
+        $('<h2/>', {
+            text: "Task",
+            class: "text-center"
+        }).appendTo(well);
+
+        var taskInfoListGroup = $('<ul/>', {
+            class: "list-group"
+        }).appendTo(well);
+
+        $('<li/>', {
+            class: "list-group-item",
+            text: "Substring to search: " + serverMsg.substringToSearch
+        }).appendTo(taskInfoListGroup);
+
+        $('<li/>', {
+            class: "list-group-item",
+            text: "String length: " + serverMsg.string.length
+        }).appendTo(taskInfoListGroup);
+
+        $('<li/>', {
+            class: "list-group-item",
+            text: "Start position in text: " + serverMsg.startPos
+        }).appendTo(taskInfoListGroup);
+
+        var progressBar = $('<div/>', {
+            class: "progress"
+        }).appendTo(well);
+
+        $('<div/>', {
+            id: "progressBar",
+            class: "progress-bar",
+            role: "progressbar",
+            'aria-valuenow': "0",
+            'aria-valuemin': "0",
+            'aria-valuemax': "100",
+            style: "min-width: 2em;",
+            text: "0%"
+        }).appendTo(progressBar);
+
+        well.fadeIn(50);
 
         var webWorker = new Worker("stringSearchWorker.js");
         webWorker.postMessage(JSON.stringify(serverMsg));
@@ -65,11 +92,25 @@ function processMsg(serverMsg) {
         webWorker.onmessage = function(evt) {
             var msg = JSON.parse(evt.data);
             statusMsg = new message(STATUS, msg.status); /* 2nd argument will be percents proceed */
-            statusMsg.substringPositions = msg.substringPositions;
+            statusMsg.substringFound = msg.substringFound;
+            if (msg.status == 100) // if work done
+            {
+                var end = new Date().getTime();
+                //statusMsg.time = msg.time;
+                statusMsg.time = end - start;
+                webWorker.terminate();
+
+                $("#progressBar").css('width', "0%").attr('aria-valuenow', 0);
+                $("#progressBar").text("0%");
+            }
+            else
+            {
+                $("#progressBar").css('width', msg.status + "%").attr('aria-valuenow', msg.status);
+                $("#progressBar").text(msg.status + "%");
+            }
+
             ws.send(JSON.stringify(statusMsg));
             console.log("client send message to server: ", JSON.stringify(statusMsg));
-
-            $("#status").text("status: " + msg.status);
         };
     }
 }

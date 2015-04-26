@@ -10,4 +10,5 @@ class ClientToServerMessage:
         jsonMsg = jsonpickle.decode(msg)
         self.type = jsonMsg["type"]
         self.status = jsonMsg["status"]
-        self.substringPositions = jsonMsg["substringPositions"]
+        self.substringFound = jsonMsg["substringFound"]
+        self.time = jsonMsg["time"]

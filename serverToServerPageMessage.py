@@ -19,5 +19,7 @@ class ServerToServerPageMessage:
     def clientStatus(self, clientId, status):
         self.clientId = clientId
         self.status = status
-    def setSubstringPositions(self, substringPositions):
-        self.substringPositions = substringPositions
+    def setSubstringFound(self, substringFound):
+        self.substringFound = substringFound
+    def setTime(self, time):
+        self.time = time

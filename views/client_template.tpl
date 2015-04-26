@@ -25,8 +25,7 @@
         <div class="container-fluid" id="main">
 
         </div>
-        <div class="container-fluid" id="taskInfo">
-
+        <div class="col-sm-4 col-md-4 col-ld-4 col-md-offset-4 col-sm-offset-4 col-ld-offset-4" id="taskInfo">
         </div>
     </body>
 </html>

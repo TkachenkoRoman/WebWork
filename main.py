@@ -17,28 +17,30 @@ serverSocket = None
 taskList = []
 
 def sendAddClientMessageToServerPage(client):
+    newClientMessage = ServerToServerPageMessage(ServerToServerPageMessage.NEW_CLIENT_MSG) # add client to server page
+    newClientMessage.addClient(client)
     if (serverSocket):
-        newClientMessage = ServerToServerPageMessage(ServerToServerPageMessage.NEW_CLIENT_MSG) # add client to server page
-        newClientMessage.addClient(client)
         serverSocket.send(jsonpickle.encode(newClientMessage))
 
 def sendLeaveClientMessageToServerPage(client):
+    deletedClientMessage = ServerToServerPageMessage(ServerToServerPageMessage.CLIENT_LEAVED_MSG) # delete client from server page
+    deletedClientMessage.deletedClient(client)
     if (serverSocket):
-        deletedClientMessage = ServerToServerPageMessage(ServerToServerPageMessage.CLIENT_LEAVED_MSG) # delete client from server page
-        deletedClientMessage.deletedClient(client)
         serverSocket.send(jsonpickle.encode(deletedClientMessage))
 
 def sendWarningMessageToServerPage(message):
+    warningMessage = ServerToServerPageMessage(ServerToServerPageMessage.WARNING_MSG) # add warning to server page
+    warningMessage.warning(message)
     if (serverSocket):
-        warningMessage = ServerToServerPageMessage(ServerToServerPageMessage.WARNING_MSG) # add warning to server page
-        warningMessage.warning(message)
         serverSocket.send(jsonpickle.encode(warningMessage))
 
-def sendClientStatusMessageToServerPage(clientId, status, substringPositions):
+def sendClientStatusMessageToServerPage(clientId, status, substringFound, time=None):
+    message = ServerToServerPageMessage(ServerToServerPageMessage.CLIENT_STATUS_MSG) # add client status to server page
+    message.clientStatus(clientId, status)
+    message.setSubstringFound(substringFound)
+    if time != None:
+        message.setTime(time)
     if (serverSocket):
-        message = ServerToServerPageMessage(ServerToServerPageMessage.CLIENT_STATUS_MSG) # add client status to server page
-        message.clientStatus(clientId, status)
-        message.setSubstringPositions(substringPositions)
         serverSocket.send(jsonpickle.encode(message))
 
 def sendMsgToClient(msg, socket):
@@ -61,8 +63,9 @@ def giveOutTasks(allClients, taskList):
             msg = ServerToClientMessage(ServerToClientMessage.TASK_MSG, client.getId())
             msg.setTask(task)
             print("message for perfrmer: ", msg)
-            client.getSocket().send(jsonpickle.encode(msg))
-            client.busy = True
+            if client.getSocket():
+                client.getSocket().send(jsonpickle.encode(msg))
+                client.busy = True
 
 def removeTaskFromTaskList(performerId):
     for task in taskList:
@@ -131,15 +134,20 @@ def handle_websocket_client():
             if (message.type == ClientToServerMessage.STATUS): # send client status message to server page
                 for cl in allClients:
                     if cl.getSocket() == wsock:
-                        sendClientStatusMessageToServerPage(cl.getId(), message.status, message.substringPositions)
-                        if message.status == 100:
+                        if message.status == 100: # if client completes task
+                            # send status with time argument
+                            print("time: ", message.time)
+                            sendClientStatusMessageToServerPage(cl.getId(), message.status, message.substringFound, message.time)
                             if cl != None:
                                 removeTaskFromTaskList(cl.getId())
                             if taskList.__len__() == 0:
                                 print("WORK DONE!!!") # send WORK_DONE_MSG
-                                serverSocket.send(jsonpickle.encode(ServerToServerPageMessage(ServerToServerPageMessage.WORK_DONE_MSG)))
+                                if serverSocket:
+                                    serverSocket.send(jsonpickle.encode(ServerToServerPageMessage(ServerToServerPageMessage.WORK_DONE_MSG)))
                             else:
                                 giveOutTasks(allClients, taskList)
+                        else:
+                            sendClientStatusMessageToServerPage(cl.getId(), message.status, message.substringFound)
 
         except WebSocketError:
             for cl in allClients:
