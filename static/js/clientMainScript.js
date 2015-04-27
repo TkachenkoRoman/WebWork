@@ -10,7 +10,9 @@ function message(type, status) {
 };
 
 
-var ws = new WebSocket("ws://webwork.ngrok.io/websocketClient");
+//var ws = new WebSocket("ws://webwork.ngrok.io/websocketClient");
+ws = new WebSocket("ws://localhost:8080/websocketClient");
+
 var output = $("#output");
 
 ws.onopen = function() {
@@ -56,17 +58,23 @@ function processMsg(serverMsg) {
 
         $('<li/>', {
             class: "list-group-item",
-            text: "Substring to search: " + serverMsg.substringToSearch
+            html: "<b>Substring to search:</b> " + serverMsg.substringToSearch
         }).appendTo(taskInfoListGroup);
 
         $('<li/>', {
             class: "list-group-item",
-            text: "String length: " + serverMsg.string.length
+            html: "<b>String length:</b> " + serverMsg.string.length
         }).appendTo(taskInfoListGroup);
 
         $('<li/>', {
             class: "list-group-item",
-            text: "Start position in text: " + serverMsg.startPos
+            html: "<b>Start position in text:</b> " + serverMsg.startPos
+        }).appendTo(taskInfoListGroup);
+
+        $('<li/>', {
+            id: "foundedSubstrings",
+            class: "list-group-item",
+            html: "<b>Founded substrings:</b> 0"
         }).appendTo(taskInfoListGroup);
 
         var progressBar = $('<div/>', {
@@ -100,6 +108,7 @@ function processMsg(serverMsg) {
                 statusMsg.time = end - start;
                 webWorker.terminate();
 
+                $("#taskInfo > .well.well-sm > h2").text("Task is completed");
                 $("#progressBar").css('width', "0%").attr('aria-valuenow', 0);
                 $("#progressBar").text("0%");
             }
@@ -108,6 +117,7 @@ function processMsg(serverMsg) {
                 $("#progressBar").css('width', msg.status + "%").attr('aria-valuenow', msg.status);
                 $("#progressBar").text(msg.status + "%");
             }
+            $("#foundedSubstrings").html("<b>Founded substrings:</b> " + msg.substringFound);
 
             ws.send(JSON.stringify(statusMsg));
             console.log("client send message to server: ", JSON.stringify(statusMsg));

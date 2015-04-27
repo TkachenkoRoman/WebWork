@@ -29,14 +29,13 @@
             </div>
             <div class="col-md-6 col-sm-6 col-ld-6">
                 <h2>Server task:</h2>
-                <div class="input-group">
-                  <input type="text" class="form-control" placeholder="Search for..." id="substringToSearch">
-                  <span class="input-group-btn">
-                    <button class="btn btn-default" type="button" id="goButton" data-loading-text="loading stuff...">Go</button>
-                  </span>
-                </div><!-- /input-group -->
+                <div class="form-group">
+                   <textarea class="form-control" rows="5" placeholder="Search for..." id="substringToSearch"></textarea>
+                </div>
+                <button class="btn btn-default" type="submit" id="goButton" data-loading-text="loading stuff...">Go</button>
+
                 <h2 id="resultsHeader"></h2>
-                <div class="col-md-6 col-sm-6 col-ld-6">
+                <div class="col-md-12 col-sm-12 col-ld-12">
                     <ul class="list-group" id="results"></ul>
                 </div>
 

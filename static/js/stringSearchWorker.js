@@ -17,15 +17,22 @@ function searchSubstring(substringToSearch, string, startPos) {
     var substrPosList = []
     var percent = Math.floor(string.length / 100);
     var status = 0;
+    arrayOfLines = substringToSearch.match(/[^\r\n]+/g);
+    console.log("array of lines: ", arrayOfLines);
 
     var start = new Date().getTime();
+
 
     for (i = 0; i < string.length; ++i) {
         // If you want to search case insensitive use
         // if (source.substring(i, i + find.length).toLowerCase() == find) {
-        if (string.substring(i, i + substringToSearch.length) == substringToSearch) {
-          substrPosList.push(i + startPos);
-        }
+
+        arrayOfLines.forEach(function (value) {
+            if (string.substring(i, i + value.length) == value) {
+              substrPosList.push(i + startPos);
+            }
+        });
+
         if (i % percent == 0)
         {
             msg = new workerMessage(status, substrPosList.length);

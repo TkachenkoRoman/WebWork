@@ -1,4 +1,5 @@
-ws = new WebSocket("ws://webwork.ngrok.io/websocketServer");
+//ws = new WebSocket("ws://webwork.ngrok.io/websocketServer");
+ws = new WebSocket("ws://localhost:8080/websocketServer");
 
 ws.onopen = function() {
     msg = new message(GREATING_MSG, "WS opened");
@@ -36,6 +37,8 @@ function processMsg(serverMsg) {
     }
     if (serverMsg.type == WARNING_MSG)
     {
+        $("#goButton").prop("disabled",false);
+        $("#goButton").button('reset');
         $('<h2/>', {
             text: serverMsg.message,
             id: "warning",
@@ -99,9 +102,13 @@ $(document).ready(function(){
     $("#goButton").click(function() {
         $("#results").empty();
         totalResult = 0;
-        msg = new message(START_SHARING_TASKS_MSG, $("#substringToSearch").val());
-        ws.send(JSON.stringify(msg));
-        $("#goButton").button('loading');
+        if ($("#substringToSearch").val().length)
+        {
+            msg = new message(START_SHARING_TASKS_MSG, $("#substringToSearch").val());
+            ws.send(JSON.stringify(msg));
+            $("#goButton").button('loading');
+        }
+        // else Nothing to search
     });
 });
 
