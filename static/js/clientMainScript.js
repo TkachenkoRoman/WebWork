@@ -11,7 +11,7 @@ function message(type, status) {
 
 
 //var ws = new WebSocket("ws://webwork.ngrok.io/websocketClient");
-ws = new WebSocket("ws://localhost:8080/websocketClient");
+var ws = new WebSocket("ws://localhost:8080/websocketClient");
 
 var output = $("#output");
 

@@ -1,6 +1,9 @@
 __author__ = 'roman'
 
 class Task:
+    """
+        all proper info about task
+    """
     COMPLETED_TASK = 1
     UNCOMPLETED_TASK = 0
     def __init__(self, substringToSearch, string, status):
@@ -18,6 +21,7 @@ class Task:
         return self.startPos
 
 class TaskManager:
+    """ Divides text into parts, generates Tasks for clients """
     def __init__(self, substringToSearch):
         with open ("static/task/data.txt", "r") as myfile:
             self.data = myfile.read()

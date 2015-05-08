@@ -1,5 +1,5 @@
 //ws = new WebSocket("ws://webwork.ngrok.io/websocketServer");
-ws = new WebSocket("ws://localhost:8080/websocketServer");
+var ws = new WebSocket("ws://localhost:8080/websocketServer");
 
 ws.onopen = function() {
     msg = new message(GREATING_MSG, "WS opened");
@@ -62,7 +62,7 @@ function processMsg(serverMsg) {
             $("#" + clientId + " > #status").text("status: ready");
             var res = $('<li/>', {
                 class: "list-group-item",
-                text: "client " + serverMsg.clientId + " complete task \t(" + serverMsg.time + "s)"
+                text: "client " + serverMsg.clientId + " complete task \t(" + serverMsg.time + "ms)"
             }).appendTo('#results');
             $('<span/>', {
                             class: "badge",
@@ -87,6 +87,7 @@ function processMsg(serverMsg) {
             }).appendTo('#results');
             $('<span/>', {
                             class: "badge",
+                            id: "totalResult",
                             text: totalResult
                         }).appendTo(total);
     }
@@ -100,6 +101,7 @@ function message(type, data) {
 
 $(document).ready(function(){
     $("#goButton").click(function() {
+        console.log("goButton clicked!");
         $("#results").empty();
         totalResult = 0;
         if ($("#substringToSearch").val().length)
@@ -119,6 +121,7 @@ function appendClient(cl) {
     var well = $('<div/>', {
         class: "well well-sm",
         id: clientId,
+        name: "client",
         style: "display: none;"
     }).appendTo('#clients');
 

@@ -10,6 +10,8 @@ from taskmanager import *
 from serverPageToServerMessage import *
 from serverToServerPageMessage import *
 from clientToServerMessage import *
+from seleniumTest import *
+from multiprocessing import Process
 
 app = Bottle()
 allClients = []
@@ -17,24 +19,33 @@ serverSocket = None
 taskList = []
 
 def sendAddClientMessageToServerPage(client):
+    """
+        Send new message to server page
+        client: icludes all client info
+    """
     newClientMessage = ServerToServerPageMessage(ServerToServerPageMessage.NEW_CLIENT_MSG) # add client to server page
     newClientMessage.addClient(client)
     if (serverSocket):
         serverSocket.send(jsonpickle.encode(newClientMessage))
 
 def sendLeaveClientMessageToServerPage(client):
+    """
+        Sends leave message to the server page
+    """
     deletedClientMessage = ServerToServerPageMessage(ServerToServerPageMessage.CLIENT_LEAVED_MSG) # delete client from server page
     deletedClientMessage.deletedClient(client)
     if (serverSocket):
         serverSocket.send(jsonpickle.encode(deletedClientMessage))
 
 def sendWarningMessageToServerPage(message):
+    """ Sends warning message to server page """
     warningMessage = ServerToServerPageMessage(ServerToServerPageMessage.WARNING_MSG) # add warning to server page
     warningMessage.warning(message)
     if (serverSocket):
         serverSocket.send(jsonpickle.encode(warningMessage))
 
 def sendClientStatusMessageToServerPage(clientId, status, substringFound, time=None):
+    """ Sends client status to server page """
     message = ServerToServerPageMessage(ServerToServerPageMessage.CLIENT_STATUS_MSG) # add client status to server page
     message.clientStatus(clientId, status)
     message.setSubstringFound(substringFound)
@@ -48,6 +59,7 @@ def sendMsgToClient(msg, socket):
         socket.send(jsonpickle.encode(msg)) #send client info to server page
 
 def giveOutTasks(allClients, taskList):
+    """ sends tasks to free clients """
     for task in taskList: # set performers to every task
         if task.getClientPerformer() == None:
             for client in allClients:
@@ -68,6 +80,7 @@ def giveOutTasks(allClients, taskList):
                 client.busy = True
 
 def removeTaskFromTaskList(performerId):
+    """ Removes task with given performer id """
     for task in taskList:
         client = task.getClientPerformer()
         if client != None:
@@ -78,7 +91,8 @@ def removeTaskFromTaskList(performerId):
                 print ("Task done by client", performerId)
                 print ("Task removed from taskList")
 
-def removeTaskPerformer(cl): # is called when working client suddenly closes
+def removeTaskPerformer(cl):
+    """ is called when working client suddenly closes """
     for task in taskList:
         client = task.getClientPerformer()
         if (client != None) and (cl != None):
@@ -86,6 +100,7 @@ def removeTaskPerformer(cl): # is called when working client suddenly closes
                 task.setClientPerformer(None)
 
 def generateClientId():
+    """ Generates unique client id """
     currentClientId = 0
     if allClients.__len__() <= 0: #form new id
         currentClientId = 0
@@ -98,6 +113,9 @@ def generateClientId():
 
 @app.route('/websocketClient')
 def handle_websocket_client():
+    """
+        Is called when client sends socket, handles clients messages
+    """
     wsock = request.environ.get('wsgi.websocket')
 
     _client = Client(generateClientId(), wsock, request.environ.get('HTTP_USER_AGENT'))
@@ -162,6 +180,9 @@ def handle_websocket_client():
 
 @app.route('/websocketServer')
 def handle_websocket_server():
+    """
+        Is called when server sends socket, handles server messages
+    """
     global serverSocket #use global serverSocket because i want to send some data to server page from another function
     global taskList
     serverSocket = request.environ.get('wsgi.websocket')
@@ -225,9 +246,20 @@ def fonts(filename):
     return static_file(filename, root='static/fonts')
 
 
+
 from gevent.pywsgi import WSGIServer
 from geventwebsocket import WebSocketError
 from geventwebsocket.handler import WebSocketHandler
-server = WSGIServer(("127.0.0.1", 8080), app,
-                    handler_class=WebSocketHandler)
-server.serve_forever()
+
+def runServer():
+    server = WSGIServer(("127.0.0.1", 8080), app,
+                        handler_class=WebSocketHandler)
+    server.serve_forever()
+
+def runTesting():
+    server_thread = Process(target=runServer)
+    server_thread.start()
+    unittest.main()
+
+#runServer()
+runTesting()
